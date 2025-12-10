@@ -1,0 +1,18 @@
+# Eldev
+.eldev/
+*-autoloads.el
+
+# Compiled files
+*.elc
+
+# Temporary files
+*~
+\#*\#
+.\#*
+
+# Test artifacts
+test-output/
+
+# OS files
+.DS_Store
+Thumbs.db
