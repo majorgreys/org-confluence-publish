@@ -16,9 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Property-based tracking (`#+CONFLUENCE_PAGE_ID:`, `#+CONFLUENCE_VERSION:`, `#+CONFLUENCE_URL:`)
 - Command: `org-confluence-publish-buffer` - Main publish/update command
 - Command: `org-confluence-publish-open-page` - Open published page in browser
+- Command: `org-confluence-publish-debug-page` - Debug helper to inspect page state
 - Configuration variables: `org-confluence-publish-base-url`, `org-confluence-publish-email`, `org-confluence-publish-api-token`, `org-confluence-publish-space-key`, `org-confluence-publish-parent-id`
 - API retry logic with exponential backoff for 429 (rate limit) and 5xx errors
 - Image discovery using org-element parser
+- Robust state synchronization: Always queries Confluence for current page state before updates
+- Trashed page detection: Clear error messages when attempting to update trashed pages
+- Version drift detection: Automatically syncs with Confluence version when local version is stale
+- URL change detection: Detects and updates org file when draft URLs change to published URLs
+- Status logging: Reports page status (draft/current/trashed) for visibility
 
 ### ox-adf.el - Native ADF Export Backend
 - 22 transcoders for all org element types

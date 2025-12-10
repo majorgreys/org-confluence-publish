@@ -9,6 +9,7 @@ Publish Org mode files to Confluence Cloud as native Atlassian Document Format (
 - **Draft workflow**: New pages created as drafts, updates publish as current
 - **Automatic image upload**: Embedded images uploaded as attachments
 - **Property tracking**: Page ID, version, and URL stored in org file
+- **Robust state sync**: Always checks live page state before updates, handles version drift and URL changes gracefully
 
 ## Requirements
 
@@ -43,6 +44,17 @@ Publish Org mode files to Confluence Cloud as native Atlassian Document Format (
 4. Subsequent publishes update as published
 
 To open the published page in browser: `M-x org-confluence-publish-open-page`
+
+## State Sync and Error Handling
+
+The package automatically handles common edge cases:
+
+- **Version drift**: If the page was edited in Confluence directly, the package detects version mismatches and uses the live version from Confluence
+- **Draft → Published transition**: If a draft page was manually published in Confluence, the package detects the URL change and updates the org file accordingly
+- **Trashed pages**: If a page is in trash, the package provides clear guidance: restore it in Confluence or remove `CONFLUENCE_PAGE_ID` property to create a new page
+- **Status visibility**: Logs the current page status (draft/published) for awareness
+
+Before each update, the package queries Confluence for the current page state to ensure operations succeed.
 
 ## Supported Org Elements
 

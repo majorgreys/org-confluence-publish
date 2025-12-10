@@ -202,6 +202,14 @@ Calls CALLBACK with (success page-data-or-error)."
          (org-confluence-publish--request
           "POST" url payload callback))))))
 
+(defun org-confluence-publish--get-page-status (page-id callback)
+  "Get current status and version of a Confluence page.
+PAGE-ID is the page ID.
+Calls CALLBACK with (success data-or-error) where data includes status and version."
+  (let ((url (format "%s/wiki/api/v2/pages/%s" org-confluence-publish-base-url page-id)))
+    (org-confluence-publish--request
+     "GET" url nil callback)))
+
 (defun org-confluence-publish--update-page (page-id version title body callback)
   "Update an existing Confluence page as published.
 PAGE-ID is the page ID.
@@ -348,19 +356,47 @@ Otherwise, creates a new page as draft."
          (images (org-confluence-publish--find-images)))
 
     (if page-id
-        ;; Update existing page
+        ;; Update existing page - first check if page is trashed
         (progn
-          (message "Updating page %s (version %s)..." page-id version)
-          (org-confluence-publish--update-page
-           page-id version title adf
-           (lambda (success data)
+          (message "Checking page status...")
+          (org-confluence-publish--get-page-status
+           page-id
+           (lambda (success status-data)
              (if (not success)
-                 (error "Failed to update page: %s" data)
-               (let* ((info (org-confluence-publish--extract-page-info data))
-                      (new-version (plist-get info :version))
-                      (page-url (plist-get info :url)))
-                 (org-confluence-publish--set-property "CONFLUENCE_VERSION" new-version)
-                 (org-confluence-publish--finalize page-id images page-url "updated"))))))
+                 (error "Failed to check page status: %s" status-data)
+               (let* ((status (cdr (assoc 'status status-data)))
+                      (current-version (number-to-string
+                                       (cdr (assoc 'number (cdr (assoc 'version status-data))))))
+                      (stored-version version)
+                      (live-url (concat org-confluence-publish-base-url
+                                       (cdr (assoc 'webui (cdr (assoc '_links status-data))))))
+                      (stored-url (org-confluence-publish--get-property "CONFLUENCE_URL")))
+                 (cond
+                  ((string= status "trashed")
+                   (error "Page %s is in trash. Please restore it in Confluence before updating, or remove CONFLUENCE_PAGE_ID property to create a new page" page-id))
+                  (t
+                   ;; Log version drift if detected
+                   (when (and stored-version (not (string= stored-version current-version)))
+                     (message "Version sync: local v%s → Confluence v%s" stored-version current-version))
+                   ;; Log URL change if detected (e.g., draft was published manually)
+                   (when (and stored-url (not (string= stored-url live-url)))
+                     (message "URL changed (page was likely published): updating from draft URL to published URL"))
+                   ;; Log status for visibility
+                   (when (string= status "draft")
+                     (message "Note: Page is currently a draft in Confluence"))
+                   ;; Proceed with update using live version from Confluence
+                   (message "Updating page %s (v%s → v%s)..." page-id current-version (1+ (string-to-number current-version)))
+                   (org-confluence-publish--update-page
+                    page-id current-version title adf
+                    (lambda (success data)
+                      (if (not success)
+                          (error "Failed to update page: %s" data)
+                        (let* ((info (org-confluence-publish--extract-page-info data))
+                               (new-version (plist-get info :version))
+                               (page-url (plist-get info :url)))
+                          (org-confluence-publish--set-property "CONFLUENCE_VERSION" new-version)
+                          (org-confluence-publish--set-property "CONFLUENCE_URL" page-url)
+                          (org-confluence-publish--finalize page-id images page-url "updated")))))))))))
 
       ;; Create new page
       (message "Creating new page as draft: %s" title)
@@ -386,6 +422,30 @@ Otherwise, creates a new page as draft."
     (if url
         (browse-url url)
       (user-error "No CONFLUENCE_URL property found. Publish the page first."))))
+
+;;;###autoload
+(defun org-confluence-publish-debug-page ()
+  "Fetch current page state from Confluence for debugging."
+  (interactive)
+  (unless (derived-mode-p 'org-mode)
+    (user-error "Not in an Org buffer"))
+  (org-confluence-publish--validate-config)
+  (let ((page-id (org-confluence-publish--get-property "CONFLUENCE_PAGE_ID")))
+    (unless page-id
+      (user-error "No CONFLUENCE_PAGE_ID found"))
+    (let ((url (format "%s/wiki/api/v2/pages/%s"
+                       org-confluence-publish-base-url page-id)))
+      (org-confluence-publish--request
+       "GET" url nil
+       (lambda (success data)
+         (if success
+             (let* ((version (cdr (assoc 'number (cdr (assoc 'version data)))))
+                    (status (cdr (assoc 'status data)))
+                    (title (cdr (assoc 'title data))))
+               (message "Page status: %s, version: %s, title: %s"
+                        status version title)
+               (message "Full response: %S" data))
+           (message "Failed to fetch page: %s" data))))))))
 
 (provide 'org-confluence-publish)
 
