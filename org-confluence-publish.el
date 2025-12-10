@@ -363,7 +363,10 @@ Otherwise, creates a new page as draft."
            page-id
            (lambda (success status-data)
              (if (not success)
-                 (error "Failed to check page status: %s" status-data)
+                 ;; Check if it's a 404 (page deleted)
+                 (if (string-match "status 404" status-data)
+                     (error "Page %s does not exist in Confluence (deleted or never existed). Remove CONFLUENCE_PAGE_ID, CONFLUENCE_VERSION, and CONFLUENCE_URL properties to create a new page" page-id)
+                   (error "Failed to check page status: %s" status-data))
                (let* ((status (cdr (assoc 'status status-data)))
                       (current-version (number-to-string
                                        (cdr (assoc 'number (cdr (assoc 'version status-data))))))
