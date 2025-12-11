@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ADF validation helper function: `org-confluence-publish-validate-adf`
   - Validates ADF JSON against official Atlassian schema using adf-validator
   - Useful for development, debugging, and ensuring schema compliance
+- **ox-adf.el**: Disable babel processing during export
+  - Prevents unnecessary code block evaluation during ADF export
+  - Eliminates "org-babel-exp process..." messages when publishing
+  - Code blocks are exported as-is without evaluation
 
 ### Added
 - **License**: GPL-3.0-or-later
