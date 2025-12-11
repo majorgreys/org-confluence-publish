@@ -1,8 +1,10 @@
 ; -*- mode: emacs-lisp; lexical-binding: t -*-
 
-(eldev-use-package-archive 'gnu)
+;; Eldev configuration for org-confluence-publish
+;; See: https://emacs-eldev.github.io/eldev/
+
+;; Use MELPA for dependencies
 (eldev-use-package-archive 'melpa)
 
-(eldev-add-extra-dependencies 'test 'buttercup 'request)
-
-(setq eldev-lint-default '(elisp checkdoc))
+;; Add buttercup as test dependency
+(eldev-add-extra-dependencies 'test 'buttercup)

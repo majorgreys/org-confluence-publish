@@ -21,6 +21,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Useful for development, debugging, and ensuring schema compliance
 
 ### Added
+- **License**: GPL-3.0-or-later
+  - Added LICENSE file with full GPL-3.0 text
+  - Updated package headers with SPDX identifier
+  - Added badges to README (CI status, license, Emacs version)
+  - Standard open source license for Emacs packages
+- Eldev configuration for development and testing
+  - Multi-version testing support (Emacs 26.3, 27.2, 28.2, 29.4, snapshot)
+  - GitHub Actions CI workflow using setup-eldev
+  - Automated dependency management and test execution
+- Acknowledgements section in README
+  - Credits sync-docs.el for inspiration
+  - Acknowledges Claude AI assistance in development
 - Initial MVP release
 - One-way sync: Org files → Confluence Cloud
 - Publish new pages as drafts (Confluence API status: "draft")

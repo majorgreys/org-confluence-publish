@@ -1,5 +1,9 @@
 # org-confluence-publish
 
+[![CI](https://github.com/majorgreys/org-confluence-publish/workflows/CI/badge.svg)](https://github.com/majorgreys/org-confluence-publish/actions)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![Emacs](https://img.shields.io/badge/Emacs-26.1+-purple.svg)](https://www.gnu.org/software/emacs/)
+
 Publish Org mode files to Confluence Cloud as native Atlassian Document Format (ADF) pages.
 
 ## Features
@@ -131,6 +135,38 @@ Use the built-in validation function:
 (define-key org-mode-map (kbd "C-c C-x o") #'org-confluence-publish-open-page)
 ```
 
+## Development
+
+### Testing
+
+This package uses [Eldev](https://github.com/emacs-eldev/eldev) for development and testing:
+
+```bash
+# Install Eldev (one-time setup)
+curl -fsSL https://raw.github.com/emacs-eldev/eldev/master/webinstall/eldev | sh
+
+# Run tests
+eldev test
+
+# Test with specific Emacs version
+eldev -e 26.3 test
+eldev -e 29.4 test
+
+# Lint the package
+eldev lint
+```
+
+## Acknowledgements
+
+This project was inspired by and builds upon [sync-docs.el](https://github.com/laertida/sync-docs.el), which provided the initial concept for org-to-Confluence publishing.
+
+Development was accelerated with assistance from [Claude](https://claude.ai) (Anthropic), an AI assistant that helped with:
+- ADF export implementation and schema compliance
+- Test coverage and validation strategies
+- Multi-version compatibility testing setup
+
 ## License
 
-MIT
+GPL-3.0-or-later
+
+See [LICENSE](LICENSE) for details.
