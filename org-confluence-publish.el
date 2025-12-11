@@ -366,11 +366,23 @@ ACTION is \"created\" or \"updated\" for messages."
       (org-confluence-publish--upload-images
        page-id images
        (lambda (img-success _uploaded)
-         (save-buffer)
+         ;; Temporarily disable git-auto-commit-mode to prevent conflicts
+         (let ((gac-was-enabled (and (boundp 'git-auto-commit-mode) git-auto-commit-mode)))
+           (when gac-was-enabled
+             (git-auto-commit-mode -1))
+           (save-buffer)
+           (when gac-was-enabled
+             (git-auto-commit-mode 1)))
          (if img-success
              (message "Page %s successfully with %d images: %s" action (length images) page-url)
            (message "Page %s but some images failed to upload: %s" action page-url))))
-    (save-buffer)
+    ;; Temporarily disable git-auto-commit-mode to prevent conflicts
+    (let ((gac-was-enabled (and (boundp 'git-auto-commit-mode) git-auto-commit-mode)))
+      (when gac-was-enabled
+        (git-auto-commit-mode -1))
+      (save-buffer)
+      (when gac-was-enabled
+        (git-auto-commit-mode 1)))
     (message "Page %s successfully: %s" action page-url)))
 
 ;;;###autoload
