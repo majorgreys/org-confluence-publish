@@ -23,6 +23,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Prevents unnecessary code block evaluation during ADF export
   - Eliminates "org-babel-exp process..." messages when publishing
   - Code blocks are exported as-is without evaluation
+- **org-confluence-publish.el**: Prevent git-auto-commit-mode conflicts
+  - Temporarily disables git-auto-commit-mode during buffer save
+  - Prevents auto-revert from removing CONFLUENCE properties
+  - Fixes integration with Doom Emacs and org-roam auto-commit workflows
 
 ### Added
 - **License**: GPL-3.0-or-later
