@@ -42,6 +42,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Command: `org-confluence-publish-buffer` - Main publish/update command
 - Command: `org-confluence-publish-open-page` - Open published page in browser
 - Command: `org-confluence-publish-debug-page` - Debug helper to inspect page state
+- Command: `org-confluence-publish-unpublish` - Delete page from Confluence and remove properties
+  - Requires confirmation before deleting
+  - Moves page to trash (not permanent deletion)
+  - Removes all `#+CONFLUENCE_*` properties from org file
+  - Auto-saves buffer after unpublish
+- Improved draft status messages with version information
+  - Draft publishing now shows version transition and status change
+  - More informative feedback when publishing draft pages
 - Configuration variables: `org-confluence-publish-base-url`, `org-confluence-publish-email`, `org-confluence-publish-api-token`, `org-confluence-publish-space-key`, `org-confluence-publish-parent-id`
 - API retry logic with exponential backoff for 429 (rate limit) and 5xx errors
 - Image discovery using org-element parser

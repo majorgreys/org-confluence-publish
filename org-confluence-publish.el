@@ -121,6 +121,14 @@ If property exists, update it. Otherwise, add it after the title."
             (insert "\n" (format "#+%s: %s" name value)))
         (insert (format "#+%s: %s\n" name value))))))
 
+(defun org-confluence-publish--remove-confluence-properties ()
+  "Remove all CONFLUENCE_* properties from current buffer."
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward "^#\\+CONFLUENCE_\\(PAGE_ID\\|VERSION\\|URL\\|PARENT_ID\\):.*\n" nil t)
+      (replace-match "")))
+  (message "Removed CONFLUENCE_* properties"))
+
 ;;; API Layer
 
 (defun org-confluence-publish--auth-header ()
@@ -261,6 +269,15 @@ Calls CALLBACK with (success attachment-data-or-error)."
          (files `(("file" . (,filename :file ,file-path)))))
     (org-confluence-publish--request
      "POST" url nil callback nil files)))
+
+(defun org-confluence-publish--delete-page (page-id callback)
+  "Delete a Confluence page by moving it to trash.
+PAGE-ID is the page ID to delete.
+Calls CALLBACK with (success nil-or-error)."
+  (let ((url (format "%s/wiki/api/v2/pages/%s"
+                     org-confluence-publish-base-url
+                     page-id)))
+    (org-confluence-publish--request "DELETE" url nil callback)))
 
 ;;; ADF Export
 
@@ -406,7 +423,8 @@ Otherwise, creates a new page as draft."
                      (message "URL changed (page was likely published): updating from draft URL to published URL"))
                    ;; Log status for visibility
                    (when (string= status "draft")
-                     (message "Note: Page is currently a draft in Confluence"))
+                     (message "Publishing draft page (v%s → v%s, draft → published)"
+                              current-version current-version))
                    ;; Proceed with update using live version from Confluence
                    (message "Updating page %s (v%s → v%s)..." page-id current-version (1+ (string-to-number current-version)))
                    (org-confluence-publish--update-page
@@ -470,6 +488,32 @@ Otherwise, creates a new page as draft."
                         status version title)
                (message "Full response: %S" data))
            (message "Failed to fetch page: %s" data))))))))
+
+(defun org-confluence-publish-unpublish ()
+  "Unpublish current buffer's page from Confluence.
+This deletes the page from Confluence (moves to trash) and removes
+all CONFLUENCE_* properties from the org file.
+
+This operation requires confirmation."
+  (interactive)
+  (unless (derived-mode-p 'org-mode)
+    (user-error "Not in an Org buffer"))
+  (org-confluence-publish--validate-config)
+  (let ((page-id (org-confluence-publish--get-property "CONFLUENCE_PAGE_ID"))
+        (title (or (org-confluence-publish--get-property "TITLE") "Untitled")))
+    (if (not page-id)
+        (error "No page to unpublish: CONFLUENCE_PAGE_ID not found")
+      (when (yes-or-no-p (format "Delete page '%s' (ID: %s) from Confluence and remove properties? "
+                                 title page-id))
+        (org-confluence-publish--delete-page
+         page-id
+         (lambda (success result)
+           (if success
+               (progn
+                 (org-confluence-publish--remove-confluence-properties)
+                 (save-buffer)
+                 (message "Page '%s' deleted from Confluence and properties removed" title))
+             (error "Failed to delete page: %s" result))))))))
 
 ;;; ADF Validation
 

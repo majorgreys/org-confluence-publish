@@ -67,6 +67,24 @@ Note: Parent ID only applies to new page creation. Parent relationship cannot be
 
 To open the published page in browser: `M-x org-confluence-publish-open-page`
 
+## Unpublishing Pages
+
+To remove a page from Confluence and reset the org file:
+
+```
+M-x org-confluence-publish-unpublish
+```
+
+This will:
+1. Prompt for confirmation
+2. Delete the page from Confluence (moves to trash)
+3. Remove all `#+CONFLUENCE_*` properties from the org file
+4. Save the buffer
+
+You can then:
+- Republish as a new page (will create a new draft)
+- Manually restore from Confluence trash if needed
+
 ## State Sync and Error Handling
 
 The package automatically handles common edge cases:

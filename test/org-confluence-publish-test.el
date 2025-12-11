@@ -553,4 +553,31 @@
         ;; Verify parentId is NOT in payload for empty string
         (expect (assoc 'parentId captured-payload) :to-equal nil)))))
 
+(describe "org-confluence-publish--remove-confluence-properties"
+  (it "removes all CONFLUENCE_* properties"
+    (with-temp-buffer
+      (org-mode)
+      (insert "#+TITLE: Test\n")
+      (insert "#+CONFLUENCE_PAGE_ID: 12345\n")
+      (insert "#+CONFLUENCE_VERSION: 2\n")
+      (insert "#+CONFLUENCE_URL: https://example.com\n")
+      (insert "#+CONFLUENCE_PARENT_ID: 67890\n")
+      (insert "\nContent\n")
+      (org-confluence-publish--remove-confluence-properties)
+      (expect (buffer-string) :to-equal "#+TITLE: Test\n\nContent\n"))))
+
+(describe "org-confluence-publish--delete-page"
+  (it "calls DELETE endpoint with correct URL"
+    (let ((org-confluence-publish-base-url "https://example.atlassian.net")
+          (captured-method nil)
+          (captured-url nil))
+      (cl-letf (((symbol-function 'org-confluence-publish--request)
+                 (lambda (method url payload callback)
+                   (setq captured-method method)
+                   (setq captured-url url)
+                   (funcall callback t nil))))
+        (org-confluence-publish--delete-page "12345" (lambda (s r)))
+        (expect captured-method :to-equal "DELETE")
+        (expect captured-url :to-equal "https://example.atlassian.net/wiki/api/v2/pages/12345")))))
+
 ;;; org-confluence-publish-test.el ends here
