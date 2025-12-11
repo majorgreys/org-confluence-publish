@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **ox-adf.el**: Table cells now wrap inline content in paragraph nodes as required by ADF schema
+  - Previously generated invalid ADF with bare text nodes in table cells
+  - Confluence accepted invalid ADF for small documents but rejected it for larger ones (causing 500 errors)
+  - All table cell content now properly wrapped in block-level nodes per ADF specification
+  - Empty table cells now use single space instead of empty string (ADF requires minLength: 1)
+- ADF validation helper function: `org-confluence-publish-validate-adf`
+  - Validates ADF JSON against official Atlassian schema using adf-validator
+  - Useful for development, debugging, and ensuring schema compliance
+
 ### Added
 - Initial MVP release
 - One-way sync: Org files → Confluence Cloud

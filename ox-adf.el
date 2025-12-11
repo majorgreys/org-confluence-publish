@@ -484,6 +484,26 @@ IS-HEADER indicates if this is a header row. INFO is communication channel."
                            (ox-adf--transcode-table-cell cell is-header info))
                          cells))))))
 
+(defun ox-adf--wrap-inline-nodes-in-paragraph (nodes)
+  "Wrap inline-level NODES in paragraph nodes if needed.
+ADF table cells must contain block-level nodes (paragraph, etc), not bare inline nodes.
+NODES can be a vector or list."
+  (let ((nodes-vec (if (vectorp nodes) nodes (vconcat nodes))))
+    (if (zerop (length nodes-vec))
+        ;; Empty: return paragraph with space (ADF requires minLength 1)
+        '[((type . "paragraph")
+           (content . [((type . "text") (text . " "))]))]
+      ;; Check if nodes are block-level or inline-level
+      (let ((block-types '("paragraph" "heading" "bulletList" "orderedList"
+                          "codeBlock" "panel" "blockquote" "table"))
+            (first-node-type (alist-get 'type (aref nodes-vec 0))))
+        (if (member first-node-type block-types)
+            ;; Already block-level
+            nodes-vec
+          ;; Inline-level: wrap in paragraph
+          `[((type . "paragraph")
+             (content . ,nodes-vec))])))))
+
 (defun ox-adf--transcode-table-cell (cell is-header info)
   "Transcode table CELL to ADF.
 IS-HEADER indicates if cell is in header. INFO is communication channel."
@@ -493,15 +513,15 @@ IS-HEADER indicates if cell is in header. INFO is communication channel."
     `((type . ,cell-type)
       (content . ,(vconcat
                   (if (string-empty-p content-str)
-                      ;; Empty cell: paragraph with empty text node
+                      ;; Empty cell: paragraph with space (ADF requires minLength 1)
                       '[((type . "paragraph")
-                         (content . [((type . "text") (text . ""))]))]
-                    ;; Parse paragraph nodes from cell contents
+                         (content . [((type . "text") (text . " "))]))]
+                    ;; Parse and wrap nodes from cell contents
                     (let ((nodes (ox-adf--parse-json-fragment
                                   (if (string-prefix-p "[" content-str)
                                       content-str
                                     (concat "[" content-str "]")))))
-                      nodes)))))))
+                      (ox-adf--wrap-inline-nodes-in-paragraph nodes))))))))
 
 (defun ox-adf-table-row (_table-row _contents _info)
   "Transcode TABLE-ROW element to ADF.

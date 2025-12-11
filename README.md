@@ -86,6 +86,44 @@ Before each update, the package queries Confluence for the current page state to
 - Links (external URLs)
 - Images (standalone and inline)
 
+## ADF Validation
+
+This package exports Org documents to Atlassian Document Format (ADF), the native format used by Confluence. To ensure generated ADF conforms to the official schema:
+
+### Validation Tools
+
+- **Official schema**: http://go.atlassian.com/adf-json-schema
+- **Interactive playground**: https://developer.atlassian.com/cloud/jira/platform/apis/document/playground/
+- **CLI validator**: [adf-validator](https://github.com/torifat/adf-validator) (npm package)
+
+### Manual Validation
+
+To validate ADF output for any Org file:
+
+```bash
+# Export to ADF
+emacs --batch -l ox-adf.el --eval "(progn (find-file \"file.org\") (princ (ox-adf-export-as-string)))" > output.json
+
+# Validate against official schema
+npx --yes adf-validator output.json
+```
+
+### Programmatic Validation
+
+Use the built-in validation function:
+
+```elisp
+(require 'org-confluence-publish)
+(require 'ox-adf)
+
+;; Validate exported ADF
+(let ((adf-json (ox-adf-export-as-string)))
+  (org-confluence-publish-validate-adf adf-json))
+;; Returns t if valid, signals error with details if invalid
+```
+
+**Note**: Validation requires Node.js and npx. The validator is automatically downloaded when first used.
+
 ## Optional Keybindings
 
 ```elisp

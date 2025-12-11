@@ -455,6 +455,29 @@ Otherwise, creates a new page as draft."
                (message "Full response: %S" data))
            (message "Failed to fetch page: %s" data))))))))
 
+;;; ADF Validation
+
+(defun org-confluence-publish-validate-adf (adf-json)
+  "Validate ADF-JSON string against official Atlassian schema.
+Uses the adf-validator npm package (https://github.com/torifat/adf-validator).
+Returns t if valid, signals error with validation details if invalid.
+
+This function requires Node.js and npx to be installed.
+The adf-validator package will be automatically downloaded if not present."
+  (let ((temp-file (make-temp-file "adf-validation-" nil ".json")))
+    (unwind-protect
+        (progn
+          (with-temp-file temp-file
+            (insert adf-json))
+          (let* ((cmd (format "npx --yes --quiet adf-validator %s 2>&1"
+                             (shell-quote-argument temp-file)))
+                 (result (shell-command-to-string cmd)))
+            (if (string-match "Successfully validated" result)
+                t
+              (error "ADF validation failed:\n%s" result))))
+      (when (file-exists-p temp-file)
+        (delete-file temp-file)))))
+
 (provide 'org-confluence-publish)
 
 ;;; org-confluence-publish.el ends here
