@@ -559,7 +559,8 @@ Actual transcoding handled by `ox-adf--transcode-table-cell' via direct traversa
 (defun ox-adf-export-as-string ()
   "Export current Org buffer to ADF JSON string.
 Returns the ADF JSON as a string."
-  (org-export-as 'adf nil nil nil))
+  (let ((org-export-use-babel nil))
+    (org-export-as 'adf nil nil nil)))
 
 ;;;###autoload
 (defun ox-adf-export-as-adf (&optional async subtreep visible-only)
