@@ -492,4 +492,65 @@
         ;; Verify status is "current" (published), not "draft"
         (expect (cdr (assoc 'status captured-payload)) :to-equal "current")))))
 
+(describe "per-file parent page ID"
+  (it "reads CONFLUENCE_PARENT_ID property from buffer"
+    (with-temp-buffer
+      (insert "#+TITLE: Test\n#+CONFLUENCE_PARENT_ID: 789012\n")
+      (org-mode)
+      (expect (org-confluence-publish--get-property "CONFLUENCE_PARENT_ID") :to-equal "789012")))
+
+  (it "includes parentId in payload when parent-id provided"
+    (let* ((org-confluence-publish-base-url "https://example.atlassian.net")
+           (org-confluence-publish-space-key "TEST")
+           (captured-payload nil)
+           (mock-callback (lambda (success data) nil)))
+      (cl-letf (((symbol-function 'org-confluence-publish--get-space-id)
+                 (lambda (callback)
+                   (funcall callback t "space-123")))
+                ((symbol-function 'org-confluence-publish--request)
+                 (lambda (method url payload callback &optional attempt files)
+                   (setq captured-payload payload)
+                   (funcall callback t '((id . "new-page")
+                                        (version . ((number . 1)))
+                                        (_links . ((webui . "/page"))))))))
+        (org-confluence-publish--create-page "Test" "{}" mock-callback "789012")
+        ;; Verify parentId is in payload
+        (expect (cdr (assoc 'parentId captured-payload)) :to-equal "789012"))))
+
+  (it "excludes parentId from payload when parent-id is nil"
+    (let* ((org-confluence-publish-base-url "https://example.atlassian.net")
+           (org-confluence-publish-space-key "TEST")
+           (captured-payload nil)
+           (mock-callback (lambda (success data) nil)))
+      (cl-letf (((symbol-function 'org-confluence-publish--get-space-id)
+                 (lambda (callback)
+                   (funcall callback t "space-123")))
+                ((symbol-function 'org-confluence-publish--request)
+                 (lambda (method url payload callback &optional attempt files)
+                   (setq captured-payload payload)
+                   (funcall callback t '((id . "new-page")
+                                        (version . ((number . 1)))
+                                        (_links . ((webui . "/page"))))))))
+        (org-confluence-publish--create-page "Test" "{}" mock-callback nil)
+        ;; Verify parentId is NOT in payload
+        (expect (assoc 'parentId captured-payload) :to-equal nil))))
+
+  (it "excludes parentId from payload when parent-id is empty string"
+    (let* ((org-confluence-publish-base-url "https://example.atlassian.net")
+           (org-confluence-publish-space-key "TEST")
+           (captured-payload nil)
+           (mock-callback (lambda (success data) nil)))
+      (cl-letf (((symbol-function 'org-confluence-publish--get-space-id)
+                 (lambda (callback)
+                   (funcall callback t "space-123")))
+                ((symbol-function 'org-confluence-publish--request)
+                 (lambda (method url payload callback &optional attempt files)
+                   (setq captured-payload payload)
+                   (funcall callback t '((id . "new-page")
+                                        (version . ((number . 1)))
+                                        (_links . ((webui . "/page"))))))))
+        (org-confluence-publish--create-page "Test" "{}" mock-callback "")
+        ;; Verify parentId is NOT in payload for empty string
+        (expect (assoc 'parentId captured-payload) :to-equal nil)))))
+
 ;;; org-confluence-publish-test.el ends here

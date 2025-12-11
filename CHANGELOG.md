@@ -25,6 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Version drift detection: Automatically syncs with Confluence version when local version is stale
 - URL change detection: Detects and updates org file when draft URLs change to published URLs
 - Status logging: Reports page status (draft/current/trashed) for visibility
+- Per-file parent page ID via `#+CONFLUENCE_PARENT_ID:` property
+  - Overrides global `org-confluence-publish-parent-id` when set
+  - Only applies to new page creation (parent is immutable)
 
 ### ox-adf.el - Native ADF Export Backend
 - 22 transcoders for all org element types

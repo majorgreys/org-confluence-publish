@@ -36,6 +36,24 @@ Publish Org mode files to Confluence Cloud as native Atlassian Document Format (
       org-confluence-publish-parent-id "123456")  ; optional
 ```
 
+### Per-File Parent Page
+
+Override the global parent ID for individual files:
+
+```org
+#+TITLE: My Document
+#+CONFLUENCE_PARENT_ID: 789012
+
+Content here...
+```
+
+Priority order:
+1. File property `#+CONFLUENCE_PARENT_ID:`
+2. Global `org-confluence-publish-parent-id`
+3. No parent (top-level page)
+
+Note: Parent ID only applies to new page creation. Parent relationship cannot be changed after creation.
+
 ## Usage
 
 1. Open an Org file

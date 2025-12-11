@@ -70,7 +70,8 @@ Generate at: https://id.atlassian.com/manage-profile/security/api-tokens"
   :group 'org-confluence-publish)
 
 (defcustom org-confluence-publish-parent-id nil
-  "Optional parent page ID for new pages."
+  "Optional parent page ID for new pages.
+Can be overridden per-file using #+CONFLUENCE_PARENT_ID: property."
   :type '(choice (const :tag "No parent" nil)
                  (string :tag "Parent page ID"))
   :group 'org-confluence-publish)
@@ -181,11 +182,12 @@ Calls CALLBACK with (success space-id-or-error)."
                  (funcall callback nil "Space not found")))
            (funcall callback nil data)))))))
 
-(defun org-confluence-publish--create-page (title body callback)
+(defun org-confluence-publish--create-page (title body callback &optional parent-id)
   "Create a new Confluence page as draft.
 TITLE is the page title.
 BODY is the ADF JSON string.
-Calls CALLBACK with (success page-data-or-error)."
+CALLBACK is called with (success page-data-or-error).
+PARENT-ID is optional parent page ID for creating hierarchical pages."
   (org-confluence-publish--get-space-id
    (lambda (success space-id)
      (if (not success)
@@ -196,9 +198,9 @@ Calls CALLBACK with (success page-data-or-error)."
                         (title . ,title)
                         (body . ((representation . "atlas_doc_format")
                                 (value . ,body))))))
-         (when org-confluence-publish-parent-id
+         (when (and parent-id (not (string-empty-p parent-id)))
            (setq payload (append payload
-                                `((parentId . ,org-confluence-publish-parent-id)))))
+                                `((parentId . ,parent-id)))))
          (org-confluence-publish--request
           "POST" url payload callback))))))
 
@@ -353,7 +355,9 @@ Otherwise, creates a new page as draft."
          (title (or (org-confluence-publish--get-property "TITLE")
                    (file-name-sans-extension (file-name-nondirectory (buffer-file-name)))))
          (adf (org-confluence-publish--export-to-adf))
-         (images (org-confluence-publish--find-images)))
+         (images (org-confluence-publish--find-images))
+         (parent-id (or (org-confluence-publish--get-property "CONFLUENCE_PARENT_ID")
+                        org-confluence-publish-parent-id)))
 
     (if page-id
         ;; Update existing page - first check if page is trashed
@@ -415,7 +419,8 @@ Otherwise, creates a new page as draft."
              (org-confluence-publish--set-property "CONFLUENCE_PAGE_ID" new-page-id)
              (org-confluence-publish--set-property "CONFLUENCE_VERSION" new-version)
              (org-confluence-publish--set-property "CONFLUENCE_URL" page-url)
-             (org-confluence-publish--finalize new-page-id images page-url "created"))))))))
+             (org-confluence-publish--finalize new-page-id images page-url "created"))))
+       parent-id))))
 
 ;;;###autoload
 (defun org-confluence-publish-open-page ()
