@@ -197,10 +197,12 @@ Standard output format for transcoders."
 
 (defun ox-adf--make-text-node (text &optional marks)
   "Create ADF text node with TEXT and optional MARKS.
-MARKS should be a list of mark alists."
-  `((type . "text")
-    (text . ,text)
-    ,@(when marks `((marks . ,(vconcat marks))))))
+MARKS should be a list of mark alists.
+Strips trailing newlines from text to prevent extra spacing in rendered output."
+  (let ((clean-text (replace-regexp-in-string "\n+\\'" "" text)))
+    `((type . "text")
+      (text . ,clean-text)
+      ,@(when marks `((marks . ,(vconcat marks)))))))
 
 (defun ox-adf--add-mark-to-node (node mark)
   "Add MARK to NODE's marks array.

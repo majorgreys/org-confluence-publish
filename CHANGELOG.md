@@ -13,6 +13,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Confluence accepted invalid ADF for small documents but rejected it for larger ones (causing 500 errors)
   - All table cell content now properly wrapped in block-level nodes per ADF specification
   - Empty table cells now use single space instead of empty string (ADF requires minLength: 1)
+- **ox-adf.el**: Strip trailing newlines from text nodes
+  - Prevents extra spacing/line breaks in rendered lists and paragraphs
+  - Text nodes no longer include trailing `\n` characters from org-export
 - ADF validation helper function: `org-confluence-publish-validate-adf`
   - Validates ADF JSON against official Atlassian schema using adf-validator
   - Useful for development, debugging, and ensuring schema compliance
