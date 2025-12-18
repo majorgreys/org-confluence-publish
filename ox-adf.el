@@ -588,9 +588,10 @@ Export is done in a buffer named \"*Org ADF Export*\"."
     async subtreep visible-only nil nil (lambda () (text-mode))))
 
 ;;;###autoload
-(defun ox-adf-export-to-buffer (&optional async subtreep visible-only)
+(defun ox-adf-export-to-buffer (&optional async subtreep visible-only body-only)
   "Export current buffer to an ADF buffer.
-Same as `ox-adf-export-as-adf' but with simpler interface."
+Same as `ox-adf-export-as-adf' but with simpler interface.
+BODY-ONLY is ignored for compatibility with org-export-dispatch."
   (interactive)
   (ox-adf-export-as-adf async subtreep visible-only))
 
