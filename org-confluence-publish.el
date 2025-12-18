@@ -286,7 +286,14 @@ Calls CALLBACK with (success nil-or-error)."
 (defun org-confluence-publish--export-to-adf ()
   "Export current Org buffer to ADF (Atlassian Document Format).
 Uses native ox-adf export backend (pure elisp, no external dependencies)."
-  (ox-adf-export-as-string))
+  (message "org-confluence-publish: Starting ADF export...")
+  (condition-case err
+      (let ((result (ox-adf-export-as-string)))
+        (message "org-confluence-publish: ADF export complete (%d bytes)" (length result))
+        result)
+    (error
+     (message "org-confluence-publish: ADF export failed: %S" err)
+     (signal (car err) (cdr err)))))
 
 ;;; Image Handling
 
