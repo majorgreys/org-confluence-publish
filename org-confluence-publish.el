@@ -456,7 +456,7 @@ Otherwise, creates a new page as draft."
                                (page-url (plist-get info :url)))
                           (org-confluence-publish--set-property "CONFLUENCE_VERSION" new-version)
                           (org-confluence-publish--set-property "CONFLUENCE_URL" page-url)
-                          (org-confluence-publish--finalize page-id images page-url "updated")))))))))))
+                          (org-confluence-publish--finalize page-id images page-url "updated"))))))))))))
 
       ;; Create new page
       (message "Creating new page as draft: %s" title)
@@ -506,7 +506,7 @@ Otherwise, creates a new page as draft."
                (message "Page status: %s, version: %s, title: %s"
                         status version title)
                (message "Full response: %S" data))
-           (message "Failed to fetch page: %s" data))))))))
+           (message "Failed to fetch page: %s" data)))))))
 
 (defun org-confluence-publish-unpublish ()
   "Unpublish current buffer's page from Confluence.
